@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import UserForm from './components/UserForm';
-import UserList from './components/UserList';
+
 import UploadForm from './components/UploadForm'; // adjust path if needed
 import LinksList from './components/LinkList';
+import UpdateLinkDetails from './components/UpdateLinkDetails';
+
 
 
 const App = () => {
@@ -24,12 +25,11 @@ const App = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Simple CRUD with Node + PostgreSQL</h1>
-      <UserForm fetchUsers={fetchUsers} />
-      <UserList fetchUsers={fetchUsers} users={users} />
+      
       <UploadForm />
       <h1>LinkedIn Links</h1>
-      <LinksList />
+      <LinksList /> 
+      <UpdateLinkDetails/>
     </div>
   );
 };

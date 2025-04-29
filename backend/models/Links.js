@@ -9,6 +9,7 @@ const Link = sequelize.define('Link', {
     allowNull: false,
     unique: true,
   },
+  
   totalLinks: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -29,10 +30,26 @@ const Link = sequelize.define('Link', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  matchedCount: {  // New column to store matched count
+  matchedCount: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
     allowNull: false,
+  },
+  mobile_numbers: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+  },
+  person_names: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+  },
+  person_locations: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+  },
+  mobile_numbers_2: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
   }
 }, {
   tableName: 'links',

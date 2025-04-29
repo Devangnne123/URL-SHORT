@@ -1,22 +1,34 @@
 const express = require('express');
 const router = express.Router();
-const { TempMobileLink } = require('../models/tempmobilelink'); // Assuming you have this model
+const TempMobileLink = require('../models/tempmobilelink'); // Assuming you have this model
 
-// Route to store matched links in tempmobilelink database
-router.post('/tempmobilelink', async (req, res) => {
-  const { uniqueId, matchedLinks } = req.body;
+// API to store matched links into tempmobilelink table
+router.post('/api/tempmobilelink', async (req, res) => {
+  const {
+    uniqueId,
+    matchedLinks,
+    mobile_number,
+    person_name,
+    person_location,
+    mobile_number_2,
+  } = req.body;
 
   try {
-    // Assuming you have a TempMobileLink model for tempmobilelink database
-    const newLink = await TempMobileLink.create({
+    const newTempMobileLink = await TempMobileLink.create({
       uniqueId,
       matchedLinks,
+      mobile_number,
+      person_name,
+      person_location,
+      mobile_number_2,
     });
-    res.status(200).json({ message: 'Matched links stored successfully', data: newLink });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error storing matched links' });
+
+    res.status(201).json(newTempMobileLink);
+  } catch (error) {
+    console.error('Error storing temp mobile link:', error);
+    res.status(500).json({ message: 'Error storing temp mobile link' });
   }
 });
+
 
 module.exports = router;

@@ -4,7 +4,7 @@ const { connectDB, sequelize } = require('./config/database');
 const Link = require('./models/Links'); // Import Link model
 const MasterUrl = require("./models/MasterUrl"); // Import MasterUrl model
 const TempMobileLink = require('./models/tempmobilelink'); // Import TempMobileLink model
-const userRoutes = require('./routes/userRoutes');
+
 const uploadRoute = require('./routes/uploadRoute');
 
 const app = express();
@@ -43,7 +43,7 @@ app.get('/api/links/search/:uniqueId', async (req, res) => {
 });
 
 // Routes
-app.use('/api/users', userRoutes);
+
 app.use('/api/upload', uploadRoute);
 
 // API to Add Master URL
@@ -182,11 +182,70 @@ app.post('/api/tempmobilelink', async (req, res) => {
 
 
 
+
+
+const tempMobileLinkRoutes = require('./routes/tempmobilelinkroute');
+app.use('/api/tempmobilelink', tempMobileLinkRoutes);
+
+
+
+
+
+
+
+
+
+
+
+// Fetch and store logic
+const fetchAndStoreTempMobileLinkData = async () => {
+  try {
+    const tempMobileLinks = await TempMobileLink.findAll();
+
+    for (const tempLink of tempMobileLinks) {
+      // Check if the uniqueId already exists in the Link table to avoid duplication
+      const existingLink = await Link.findOne({ where: { uniqueId: tempLink.uniqueId } });
+
+      if (!existingLink) {
+        await Link.create({
+          uniqueId: tempLink.uniqueId,
+          totalLinks: tempLink.matchedLinks.length,
+          links: tempLink.matchedLinks,
+          mobile_numbers: tempLink.mobile_numbers || [],
+          person_names: tempLink.person_names || [],
+          person_locations: tempLink.person_locations || [],
+          mobile_numbers_2: tempLink.mobile_numbers_2 || [],
+        });
+      }
+    }
+
+    console.log('TempMobileLink data moved successfully to Links table.');
+  } catch (error) {
+    console.error('Error moving TempMobileLink data:', error.message);
+  }
+};
+
+
+
+
+
+
+const matchedLinksRoutes = require('./routes/matchedLinksRoutes');
+// app.use(bodyParser.json());
+
+// Use the routes
+app.use('/api/matched-links', matchedLinksRoutes);
+
 // Database Connection
 connectDB();
-sequelize.sync({ alter: true }); // Sync models to database
+sequelize.sync().then(() => {
+  console.log('Database connected successfully.');
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running at http://localhost:${PORT}`);
+    // Run fetch every 1 minute
+    // setInterval(fetchAndStoreTempMobileLinkData, 60 * 1000);
+  });
+}).catch(err => {
+  console.error('Database connection error:', err);
 });

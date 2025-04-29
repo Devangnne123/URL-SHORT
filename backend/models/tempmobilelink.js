@@ -1,5 +1,6 @@
+// models/TempMobileLink.js
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database'); // Adjust with your database config
+const { sequelize } = require('../config/database');
 
 const TempMobileLink = sequelize.define('TempMobileLink', {
   uniqueId: {
@@ -10,6 +11,22 @@ const TempMobileLink = sequelize.define('TempMobileLink', {
   matchedLinks: {
     type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: false,
+  },
+  mobile_numbers: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+  },
+  person_names: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+  },
+  person_locations: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+  },
+  mobile_numbers_2: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
   },
 }, {
   tableName: 'tempmobilelink',
