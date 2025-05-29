@@ -134,7 +134,7 @@ const UploadAndSearch = () => {
     formData.append('file', file);
 
     try {
-      const res = await axios.post('http://3.6.160.211:5000/api/excel/upload', formData);
+      const res = await axios.post('http://65.0.19.161:5000/api/excel/upload', formData);
       alert(res.data.message);
     } catch (error) {
       alert('Upload failed');
@@ -148,7 +148,7 @@ const UploadAndSearch = () => {
     
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://3.6.160.211:5000/api/excel/search/${searchId}`);
+      const res = await axios.get(`http://65.0.19.161:5000/api/excel/search/${searchId}`);
       setSearchResult(res.data);
     } catch {
       alert('LinkedIn ID not found');
