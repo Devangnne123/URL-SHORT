@@ -102,7 +102,7 @@ const Login = () => {
     setMessage('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/login', { email, password });
+      const res = await axios.post('http://3.6.160.211:5000/api/login', { email, password });
       setMessage(res.data.message);
       window.location.href = "/dashboard"; 
     } catch (err) {
