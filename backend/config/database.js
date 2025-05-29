@@ -1,21 +1,21 @@
 const { Sequelize } = require('sequelize');
 
 // Create a new Sequelize instance
-const sequelize = new Sequelize('Crud', 'postgres', 'Admin', {
+const sequelize = new Sequelize('upload', 'postgres', 'Admin', {
   host: 'localhost',
   dialect: 'postgres',
-  logging: false, // Set to true if you want to see SQL queries in console
+  logging: false,
 });
 
-// Test the connection (optional but recommended)
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ Database connected successfully.');
+    await sequelize.sync();
+    console.log('✅ All models were synchronized successfully.');
   } catch (error) {
     console.error('❌ Unable to connect to the database:', error);
   }
 };
 
-// Export both sequelize instance and connectDB function
 module.exports = { sequelize, connectDB };

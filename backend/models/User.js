@@ -1,19 +1,19 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
+const { sequelize } = require('../config/database'); // assuming this is your path
 
-// Define User model
 const User = sequelize.define('User', {
-  name: {
+  email: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
-  email: {
+  password: {
     type: DataTypes.STRING,
     allowNull: false,
   },
 }, {
-  tableName: 'users', // Table name in your database
-  timestamps: false,  // If you don't have createdAt/updatedAt
+  tableName: 'users',
+  timestamps: false,
 });
 
 module.exports = User;
