@@ -31,17 +31,33 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// Search route
-router.get('/search/:linkedin_id', async (req, res) => {
-  const { linkedin_id } = req.params;
-
+router.get('/search/:searchId', async (req, res) => {
   try {
-    const record = await ExcelData.findOne({ where: { linkedin_id } });
-    if (!record) return res.status(404).json({ message: 'Data not found' });
-    res.status(200).json(record);
+    const record = await ExcelData.findOne({ 
+      where: { 
+        linkedin_id: req.params.searchId 
+      } 
+    });
+    
+    if (!record) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Record not found' 
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: record
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Search error:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error' 
+    });
   }
 });
+
 
 module.exports = router;
