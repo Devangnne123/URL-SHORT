@@ -121,7 +121,7 @@ const Pre = styled.pre`
 
 const UploadAndSearch = () => {
   const [file, setFile] = useState(null);
-  const [searchId, setSearchId] = useState('');
+ const [searchUrl, setSearchUrl] = useState('');
   const [searchResult, setSearchResult] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -144,14 +144,18 @@ const UploadAndSearch = () => {
   };
 
   const handleSearch = async () => {
-    if (!searchId.trim()) return;
+    if (!searchUrl.trim()) return;
     
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://65.0.19.161:5000/api/excel/search/${searchId}`);
-      setSearchResult(res.data);
-    } catch {
-      alert('LinkedIn ID not found');
+      const res = await axios.get(`http://65.0.19.161:5000/api/excel/search`, {
+        params: {
+          linkedin_url: searchUrl
+        }
+      });
+      setSearchResult(res.data.data);
+    } catch (error) {
+      alert('LinkedIn URL not found');
       setSearchResult(null);
     } finally {
       setIsSearching(false);
@@ -180,27 +184,30 @@ const UploadAndSearch = () => {
       <Divider />
 
       <Section>
-        <SectionTitle>Search by LinkedIn ID</SectionTitle>
+        <SectionTitle>Search by LinkedIn link</SectionTitle>
         <SearchContainer>
           <SearchInput
-            placeholder="Enter LinkedIn ID"
-            value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
+           type="text" 
+        value={searchUrl}
+        onChange={(e) => setSearchUrl(e.target.value)}
+        placeholder="Enter LinkedIn URL (e.g., https://linkedin.com/in/username)"
           />
           <Button 
-            onClick={handleSearch} 
-            disabled={!searchId.trim() || isSearching}
-          >
+            onClick={handleSearch} disabled={isSearching}>
+            
+        
             {isSearching ? 'Searching...' : 'Search'}
           </Button>
         </SearchContainer>
 
-        {searchResult && (
-          <ResultContainer>
-            <ResultTitle>Search Result:</ResultTitle>
-            <Pre>{JSON.stringify(searchResult, null, 2)}</Pre>
-          </ResultContainer>
-        )}
+       {searchResult && (
+  <div>
+    <h3>Search Result (JSON):</h3>
+    <pre>
+      {JSON.stringify(searchResult, null, 2)}
+    </pre>
+  </div>
+)}
       </Section>
     </Container>
   );

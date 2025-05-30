@@ -11,7 +11,10 @@ const ExcelData = sequelize.define('ExcelData', {
   mobile_number: DataTypes.STRING,
   mobile_number_2: DataTypes.STRING,
   person_location: DataTypes.STRING,
-  linkedin_url: DataTypes.STRING,
+  linkedin_url: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
   tableName: 'excel_data',
   timestamps: false,

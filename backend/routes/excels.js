@@ -31,11 +31,21 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-router.get('/search/:searchId', async (req, res) => {
+// Search by LinkedIn URL
+router.get('/search', async (req, res) => {
   try {
+    const { linkedin_url } = req.query;
+
+    if (!linkedin_url) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'LinkedIn URL is required' 
+      });
+    }
+
     const record = await ExcelData.findOne({ 
       where: { 
-        linkedin_id: req.params.searchId 
+        linkedin_url: linkedin_url 
       } 
     });
     
@@ -58,6 +68,12 @@ router.get('/search/:searchId', async (req, res) => {
     });
   }
 });
+
+
+
+
+
+
 
 
 module.exports = router;
