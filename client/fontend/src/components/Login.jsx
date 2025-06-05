@@ -104,6 +104,7 @@ const Login = () => {
     try {
       const res = await axios.post('http://65.0.19.161:5000/api/login', { email, password });
       setMessage(res.data.message);
+      localStorage.setItem('userEmail', email);
       window.location.href = "/dashboard"; 
     } catch (err) {
       setMessage(err.response?.data?.message || 'Login failed');
