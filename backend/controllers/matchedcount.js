@@ -34,8 +34,8 @@ const checkIfMatch = (cleanLinks, masterUrls) => {
 // Fetch links and master URLs, and update matched count
 const fetchAndCompareLinks = async (req, res) => {
   try {
-    const linkResponse = await axios.get('http://65.0.19.161:5000/api/links');
-    const masterUrlResponse = await axios.get('http://65.0.19.161:5000/api/master-urls');
+    const linkResponse = await axios.get('http://localhost:5000/api/links');
+    const masterUrlResponse = await axios.get('http://localhost:5000/api/master-urls');
 
     const links = linkResponse.data;
     const masterUrls = masterUrlResponse.data;

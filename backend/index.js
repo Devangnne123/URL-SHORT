@@ -34,6 +34,20 @@ app.get('/api/user/key', async (req, res) => {
 
 
 
+// POST /auth/login
+app.post('/auth/login', async (req, res) => {
+  const { key } = req.body;
+  const user = await User.findOne({ where: { key } });
+
+  if (user) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false });
+  }
+});
+
+
+
 
 
 
@@ -64,7 +78,7 @@ app.post('/api/user/refresh-key', async (req, res) => {
   }
 });
 
-const PORT = 5000;
+const PORT = 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

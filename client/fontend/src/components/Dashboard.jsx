@@ -1,60 +1,80 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
 import axios from 'axios';
 
 const Dashboard = () => {
-  const { '*' : linkedinUrl } = useParams();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+    const [linkedinUrl, setLinkedinUrl] = useState('');
+    const [data, setData] = useState(null);
+    const [error, setError] = useState('');
 
-  useEffect(() => {
-    console.log('Extracted LinkedIn URL:', linkedinUrl);
+    const fetchData = async (e) => {
+        e.preventDefault();
+        try {
+            // Get userKey from localStorage
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            console.log('Retrieved userData from localStorage:', userData);
+            if (!userData || !userData.userKey) {
+                throw new Error('User key not found');
+            }
 
-    const fetchProfile = async () => {
-      try {
-        // Clean the URL to ensure consistent format
-        const cleanedUrl = linkedinUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
-        const apiUrl = `http://65.0.19.161:5000/api/excel/search?linkedin_url=${cleanedUrl}`;
-        console.log('Final API Request URL:', apiUrl);
+            // Extract the LinkedIn profile path if full URL is entered
+            let profilePath = linkedinUrl;
+            if (linkedinUrl.includes('linkedin.com/in/')) {
+                profilePath = linkedinUrl.split('linkedin.com/in/')[1];
+            }
 
-        const response = await axios.get(apiUrl);
-        console.log('Full API Response:', response); // Log entire response
-        
-        if (response.data.success) {
-          console.log('Profile Data Received:', response.data.data);
-          setProfile(response.data.data);
-        } else {
-          setError(response.data.message || 'Profile not found');
+            console.log('Fetching data for LinkedIn profile:', profilePath);
+
+            const response = await axios.post(
+                'http://65.0.19.161:8080/api/data/linkedin',
+                {
+                    userKey: userData.userKey,
+                    linkedinUrl: profilePath
+                }
+            );
+            
+            console.log('API Response:', response.data);
+            
+            if (response.data.success && response.data.data) {
+                setData(response.data.data);
+                setError('');
+            } else {
+                throw new Error(response.data.message || 'No data found');
+            }
+        } catch (err) {
+            console.error('Error fetching data:', err);
+            setError(err.response?.data?.message || err.message || 'Failed to fetch data');
+            setData(null);
         }
-      } catch (err) {
-        console.error('Full Error:', err);
-        console.error('Error Response:', err.response);
-        setError(err.response?.data?.message || 'Failed to fetch profile');
-      } finally {
-        setLoading(false);
-      }
     };
 
-    if (linkedinUrl) fetchProfile();
-  }, [linkedinUrl]);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  return (
-    <div>
-     
-      {profile ? (
-        <div>
-          
-          <pre>{JSON.stringify(profile, null, 2)}</pre> {/* Debug output */}
+    return (
+        <div className="dashboard-container">
+            <h2>Dashboard</h2>
+            <form onSubmit={fetchData}>
+                <input
+                    type="text"
+                    placeholder="Enter LinkedIn URL (e.g., linkedin.com/in/username)"
+                    value={linkedinUrl}
+                    onChange={(e) => setLinkedinUrl(e.target.value)}
+                    required
+                />
+                <button type="submit">Fetch Data</button>
+            </form>
+            
+            {error && <p style={{color: 'red'}}>{error}</p>}
+            
+            {data && (
+                <div className="data-container">
+                    <h3>Person Details</h3>
+                    <p>Name: {data.personName}</p>
+                    <p>Mobile: {data.mobileNumber || 'N/A'}</p>
+                    <p>Alternative Mobile: {data.mobileNumber2 || 'N/A'}</p>
+                    <p>Location: {data.personLocation}</p>
+                    <p>LinkedIn URL: {data.linkedinUrl}</p>
+                </div>
+            )}
         </div>
-      ) : (
-        <p>No profile data found for: {linkedinUrl}</p>
-      )}
-    </div>
-  );
+    );
 };
 
 export default Dashboard;

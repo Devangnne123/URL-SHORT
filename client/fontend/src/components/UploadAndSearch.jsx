@@ -140,44 +140,67 @@ const UploadAndSearch = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [userKey, setUserKey] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const userEmail = localStorage.getItem('userEmail');
+  const [authStatus, setAuthStatus] = useState({
+    loading: true,
+    message: 'Checking authentication...',
+    valid: false
+  });
 
-  // Fetch user key on mount
   useEffect(() => {
-    const fetchKey = async () => {
-      try {
-        const response = await axios.get('http://65.0.19.161:5000/api/user/key', {
-          params: { email: userEmail },
+    const checkAuth = async () => {
+      const authKey = localStorage.getItem('authKey');
+      const authToken = localStorage.getItem('authToken');
+      
+      if (!authKey || !authToken) {
+        setAuthStatus({
+          loading: false,
+          message: "❌ Unauthorized: Please login first",
+          valid: false
         });
-        setUserKey(response.data.key);
+        setTimeout(() => window.location.href = "/", 2000);
+        return;
+      }
+
+      try {
+        // Verify with backend
+        const response = await axios.post('http://65.0.19.161:8080/api/verify-auth', {
+          key: authKey
+        }, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (response.data.valid) {
+          setAuthStatus({
+            loading: false,
+            message: "✅ Authorized",
+            valid: true
+          });
+        } else {
+          handleLogout();
+        }
       } catch (error) {
-        console.error('Failed to fetch key:', error);
+        setAuthStatus({
+          loading: false,
+          message: "⚠️ Session expired or invalid",
+          valid: false
+        });
+        handleLogout();
       }
     };
 
-    if (userEmail) {
-      fetchKey();
-    }
-  }, [userEmail]);
+    checkAuth();
+  }, []);
 
-  // Refresh key handler
-  const handleRefreshKey = async () => {
-    setIsRefreshing(true);
-    try {
-      const response = await axios.post('http://65.0.19.161:5000/api/user/refresh-key', {
-        email: userEmail,
-      });
-      setUserKey(response.data.newKey);
-    } catch (error) {
-      console.error('Failed to refresh key:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('authKey');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    window.location.href = "/";
   };
 
-  // Upload Excel file
   const handleFileUpload = async () => {
     if (!file) return;
 
@@ -186,54 +209,86 @@ const UploadAndSearch = () => {
     formData.append('file', file);
 
     try {
-      const res = await axios.post('http://65.0.19.161:5000/api/excel/upload', formData);
+      const res = await axios.post('http://65.0.19.161:8080/api/excel/upload', formData, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       alert(res.data.message);
     } catch (error) {
-      alert('Upload failed');
+      if (error.response?.status === 401) {
+        handleLogout();
+      } else {
+        alert('Upload failed: ' + (error.response?.data?.message || error.message));
+      }
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Search LinkedIn URL
   const handleSearch = async () => {
     if (!searchUrl.trim()) return;
 
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://65.0.19.161:5000/api/excel/search`, {
-        params: {
-          linkedin_url: searchUrl,
-        },
+      const res = await axios.get(`http://65.0.19.161:8080/api/excel/search`, {
+        params: { linkedin_url: searchUrl },
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
       });
       setSearchResult(res.data.data);
     } catch (error) {
-      alert('LinkedIn URL not found');
+      if (error.response?.status === 401) {
+        handleLogout();
+      } else {
+        alert('Search failed: ' + (error.response?.data?.message || error.message));
+      }
       setSearchResult(null);
     } finally {
       setIsSearching(false);
     }
   };
 
+  if (authStatus.loading) {
+    return (
+      <Container>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          Verifying authentication...
+        </div>
+      </Container>
+    );
+  }
+
+  if (!authStatus.valid) {
+    return (
+      <Container>
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
+          {authStatus.message}
+        </div>
+      </Container>
+    );
+  }
+
   return (
     <Container>
-      {/* Welcome & Key Section */}
-      {userEmail && (
-        <>
-          <div style={{ textAlign: 'right', marginBottom: '0.5rem', color: '#3498db', fontWeight: '600' }}>
-            Welcome, {userEmail}
-          </div>
-          <KeyDisplay>
-            <KeyLabel>Your Unique Key:</KeyLabel>
-            <KeyValue>{userKey || 'Loading...'}</KeyValue>
-            <RefreshButton onClick={handleRefreshKey} disabled={isRefreshing}>
-              {isRefreshing ? 'Generating...' : 'Refresh Key'}
-            </RefreshButton>
-          </KeyDisplay>
-        </>
-      )}
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ color: '#3498db', fontWeight: '600' }}>
+          {authStatus.message}
+        </div>
+        <Button onClick={handleLogout} style={{ backgroundColor: '#e74c3c' }}>
+          Logout
+        </Button>
+      </div>
 
-      {/* Excel Upload Section */}
+      <KeyDisplay>
+        <KeyLabel>Your Access Key:</KeyLabel>
+        <KeyValue>{localStorage.getItem('authKey')?.slice(0, 12)}...</KeyValue>
+      </KeyDisplay>
+
+      {/* Rest of your component remains the same */}
       <Section>
         <SectionTitle>Excel Upload</SectionTitle>
         <FileInputContainer>
@@ -246,7 +301,6 @@ const UploadAndSearch = () => {
 
       <Divider />
 
-      {/* Search Section */}
       <Section>
         <SectionTitle>Search by LinkedIn link</SectionTitle>
         <SearchContainer>
@@ -254,7 +308,7 @@ const UploadAndSearch = () => {
             type="text"
             value={searchUrl}
             onChange={(e) => setSearchUrl(e.target.value)}
-            placeholder="Enter LinkedIn URL (e.g., https://linkedin.com/in/username)"
+            placeholder="Enter LinkedIn URL"
           />
           <Button onClick={handleSearch} disabled={isSearching}>
             {isSearching ? 'Searching...' : 'Search'}
@@ -262,9 +316,11 @@ const UploadAndSearch = () => {
         </SearchContainer>
 
         {searchResult && (
-          <div>
-            <h3>Search Result (JSON):</h3>
-            <pre>{JSON.stringify(searchResult, null, 2)}</pre>
+          <div style={{ marginTop: '1rem', background: '#f8f9fa', padding: '1rem', borderRadius: '8px' }}>
+            <h3>Search Result:</h3>
+            <pre style={{ whiteSpace: 'pre-wrap' }}>
+              {JSON.stringify(searchResult, null, 2)}
+            </pre>
           </div>
         )}
       </Section>

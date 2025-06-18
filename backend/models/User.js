@@ -3,15 +3,7 @@ const { sequelize } = require('../config/database');
 const crypto = require('crypto');
 
 const User = sequelize.define('User', {
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
+  
   key: {
     type: DataTypes.STRING(12),
     allowNull: true,
