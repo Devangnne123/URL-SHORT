@@ -25,7 +25,7 @@ const Dashboard = () => {
             console.log('Fetching data for LinkedIn profile:', profilePath);
 
             const response = await axios.post(
-                'http://65.0.19.161:8080/api/data/linkedin',
+                'http://13.232.220.117:8080/api/data/linkedin',
                 {
                     userKey: userData.userKey,
                     linkedinUrl: profilePath

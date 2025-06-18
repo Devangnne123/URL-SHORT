@@ -14,7 +14,7 @@ const Login = () => {
         setError('');
         
         try {
-            const response = await axios.post('http://65.0.19.161:8080/api/auth/login', {
+            const response = await axios.post('http://13.232.220.117:8080/api/auth/login', {
                 email,
                 password
             });
@@ -117,7 +117,7 @@ const Dashboard = () => {
             }
 
             const response = await axios.post(
-                'http://65.0.19.161:8080/api/data/linkedin',
+                'http://13.232.220.117:8080/api/data/linkedin',
                 {
                     userKey: userData.userKey,
                     linkedinUrl: linkedinUrl
