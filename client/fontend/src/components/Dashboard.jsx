@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { IoMdEye } from "react-icons/io";
+import { IoMdEyeOff } from "react-icons/io";
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -11,6 +13,8 @@ const Dashboard = () => {
     const [isRefreshingKey, setIsRefreshingKey] = useState(false);
     const [searchHistory, setSearchHistory] = useState([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [showApiKey, setShowApiKey] = useState(false);
+    const [showApiDocs, setShowApiDocs] = useState(false);
     
     const [userData, setUserData] = useState(() => {
         const storedData = localStorage.getItem('userData');
@@ -144,19 +148,9 @@ const Dashboard = () => {
     };
 
     return (
-        <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+         <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             {/* Sidebar */}
             <div className="dashboard-sidebar">
-                {/* <div className="sidebar-header">
-                    <h3>User Dashboard</h3>
-                    <button 
-                        className="sidebar-toggle" 
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    >
-                        {isSidebarOpen ? '◀' : '▶'}
-                    </button>
-                </div> */}
-                
                 <div className="user-info-section">
                     <div className="info-group">
                         <label>Email</label>
@@ -169,16 +163,37 @@ const Dashboard = () => {
                     </div>
                     
                     <div className="info-group">
-                        <label>User Key</label>
-                        <div className="info-value key-value">
-                            <span>{userData?.userKey || 'N/A'}</span>
+                        <label>API Key</label>
+                        <div className="api-key-container">
+                            <div className="api-key-value">
+                                {showApiKey ? (
+                                    <>
+                                        <span>{userData?.userKey || 'N/A'}</span>
+                                        <button 
+                                            onClick={refreshUserKey} 
+                                            disabled={isRefreshingKey}
+                                            className="refresh-key-btn"
+                                            title="Refresh Key"
+                                        >
+                                            {isRefreshingKey ? '🔄' : '🔄'}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <span className="key-hidden">••••••••••••</span>
+                                )}
+                                <button 
+                                    onClick={() => setShowApiKey(!showApiKey)}
+                                    className="toggle-key-btn"
+                                    title={showApiKey ? 'Hide Key' : 'Show Key'}
+                                >
+                                    {showApiKey ? <IoMdEye /> : <IoMdEyeOff />}
+                                </button>
+                            </div>
                             <button 
-                                onClick={refreshUserKey} 
-                                disabled={isRefreshingKey}
-                                className="refresh-key-btn"
-                                title="Refresh Key"
+                                onClick={() => setShowApiDocs(!showApiDocs)}
+                                className="api-docs-btn"
                             >
-                                {isRefreshingKey ? '🔄' : '🔄'}
+                                {showApiDocs ? 'Hide API Docs' : 'How to Use API'}
                             </button>
                         </div>
                     </div>
@@ -203,81 +218,176 @@ const Dashboard = () => {
                         Credits: <strong>{userData?.credits || 0}</strong>
                     </div>
                 </div>
-                
-                {/* <div className="search-section">
-                    <h2>LinkedIn Profile Lookup</h2>
-                    <form onSubmit={fetchData} className="search-form">
-                        <div className="input-group">
-                            <input
-                                type="text"
-                                placeholder="https://www.linkedin.com/in/username"
-                                value={linkedinUrl}
-                                onChange={(e) => setLinkedinUrl(e.target.value)}
-                                required
-                            />
-                            <button type="submit" disabled={isLoading}>
-                                {isLoading ? (
-                                    <>
-                                        <span className="spinner"></span>
-                                        Fetching...
-                                    </>
-                                ) : 'Fetch Data'}
-                            </button>
+
+                {showApiDocs ? (
+                    <div className="api-documentation-main">
+                        <h2>API Documentation</h2>
+                        
+                        <div className="docs-section">
+                            <h3>Endpoint</h3>
+                            <code>POST http://3.109.203.132:8080/api/data/linkedin</code>
+                            <p className="description">
+                                Retrieve LinkedIn profile data by providing a valid LinkedIn profile URL and your API key.
+                            </p>
                         </div>
-                    </form>
-                    
-                    {error && <div className="alert error">{error}</div>}
-                </div> */}
-                
-                <div className="history-section">
-                    <div className="section-header">
-                        <h3>Search History</h3>
-                        <button 
-                            onClick={fetchSearchHistory} 
-                            className="refresh-btn"
-                            title="Refresh History"
-                        >
-                            🔄
-                        </button>
-                    </div>
-                    
-                    {searchHistory.length > 0 ? (
-                        <div className="table-container">
-                            <table>
+
+                        <div className="docs-section">
+                            <h3>Authentication</h3>
+                            <p className="description">
+                                Include your API key in the request body:
+                            </p>
+                            <pre>{`{
+  "userKey": "your_api_key_here",  // Required
+  "linkedinUrl": "https://www.linkedin.com/in/username"  // Required
+}`}</pre>
+                        </div>
+
+                        <div className="docs-section">
+                            <h3>Request Parameters</h3>
+                            <table className="params-table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>LinkedIn URL</th>
-                                        <th>Credits Used</th>
-                                        <th>Remaining Credits</th>
-                                        <th>Searches</th>
+                                        <th>Parameter</th>
+                                        <th>Type</th>
+                                        <th>Required</th>
+                                        <th>Description</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {searchHistory.map((item, index) => (
-                                        <tr key={index}>
-                                            <td>{new Date(item.searchDate).toLocaleString()}</td>
-                                            <td className="url-cell">
-                                                <a href={item.linkedinUrl} target="_blank" rel="noopener noreferrer">
-                                                    {item.linkedinUrl.length > 30 
-                                                        ? `${item.linkedinUrl.substring(0, 30)}...` 
-                                                        : item.linkedinUrl}
-                                                </a>
-                                            </td>
-                                            <td>{item.creditsDeducted}</td>
-                                            <td>{item.remainingCredits}</td>
-                                            <td>{item.searchCount}/{item.searchLimit}</td>
-                                        </tr>
-                                    ))}
+                                    <tr>
+                                        <td>userKey</td>
+                                        <td>String</td>
+                                        <td>Yes</td>
+                                        <td>Your unique API key for authentication</td>
+                                    </tr>
+                                    <tr>
+                                        <td>linkedinUrl</td>
+                                        <td>String (URL)</td>
+                                        <td>Yes</td>
+                                        <td>Valid LinkedIn profile URL (must contain 'linkedin.com/in/')</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
-                    ) : (
-                        <div className="no-history">
-                            <p>No search history found</p>
+
+                        <div className="docs-section">
+                            <h3>Example Requests</h3>
+                            
+                            <h4>cURL</h4>
+                            <pre>{`curl -X POST \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "userKey": "${userData?.userKey || 'your_api_key_here'}",
+    "linkedinUrl": "https://www.linkedin.com/in/example"
+  }' \\
+  http://3.109.203.132:8080/api/data/linkedin`}</pre>
+
+                            <h4>JavaScript (fetch)</h4>
+                            <pre>{`fetch('http://3.109.203.132:8080/api/data/linkedin', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    userKey: '${userData?.userKey || 'your_api_key_here'}',
+    linkedinUrl: 'https://www.linkedin.com/in/example'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));`}</pre>
+
+                            <h4>Python (requests)</h4>
+                            <pre>{`import requests
+
+url = "http://3.109.203.132:8080/api/data/linkedin"
+payload = {
+    "userKey": "${userData?.userKey || 'your_api_key_here'}",
+    "linkedinUrl": "https://www.linkedin.com/in/example"
+}
+
+response = requests.post(url, json=payload)
+print(response.json())`}</pre>
                         </div>
-                    )}
-                </div>
+                    </div>
+                ) : (
+                    <>
+                        {/* <div className="search-section">
+                            <h2>LinkedIn Profile Lookup</h2>
+                            <form onSubmit={fetchData} className="search-form">
+                                <div className="input-group">
+                                    <input
+                                        type="text"
+                                        placeholder="https://www.linkedin.com/in/username"
+                                        value={linkedinUrl}
+                                        onChange={(e) => setLinkedinUrl(e.target.value)}
+                                        required
+                                    />
+                                    <button type="submit" disabled={isLoading}>
+                                        {isLoading ? (
+                                            <>
+                                                <span className="spinner"></span>
+                                                Fetching...
+                                            </>
+                                        ) : 'Fetch Data'}
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            {error && <div className="alert error">{error}</div>}
+                        </div> */}
+                        
+                        <div className="history-section">
+                            <div className="section-header">
+                                <h3>Search History</h3>
+                                <button 
+                                    onClick={fetchSearchHistory} 
+                                    className="refresh-btn"
+                                    title="Refresh History"
+                                >
+                                    🔄
+                                </button>
+                            </div>
+                            
+                            {searchHistory.length > 0 ? (
+                                <div className="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>LinkedIn URL</th>
+                                                <th>Credits Used</th>
+                                                <th>Remaining Credits</th>
+                                                <th>Searches</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {searchHistory.map((item, index) => (
+                                                <tr key={index}>
+                                                    <td>{new Date(item.searchDate).toLocaleString()}</td>
+                                                    <td className="url-cell">
+                                                        <a href={item.linkedinUrl} target="_blank" rel="noopener noreferrer">
+                                                            {item.linkedinUrl.length > 30 
+                                                                ? `${item.linkedinUrl.substring(0, 30)}...` 
+                                                                : item.linkedinUrl}
+                                                        </a>
+                                                    </td>
+                                                    <td>{item.creditsDeducted}</td>
+                                                    <td>{item.remainingCredits}</td>
+                                                    <td>{item.searchCount}/{item.searchLimit}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="no-history">
+                                    <p>No search history found</p>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

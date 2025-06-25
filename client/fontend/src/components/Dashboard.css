@@ -104,6 +104,7 @@ body {
     border: none;
     color: var(--sidebar-text);
     cursor: pointer;
+    width: 10px;
     font-size: 1rem;
     padding: 0;
     transition: transform 0.2s;
@@ -407,4 +408,299 @@ tr:hover {
 /* Make sure sidebar scrolls if content is long */
 .dashboard-sidebar {
     overflow-y: auto;
+}
+
+/* Add to Dashboard.css */
+
+/* API Key Styles */
+.api-key-container {
+    margin-top: 5px;
+}
+
+.api-key-value {
+    display: flex;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.api-key-value span {
+    flex-grow: 1;
+}
+
+.key-hidden {
+    letter-spacing: 2px;
+}
+
+.toggle-key-btn {
+    background: none;
+    border: none;
+    color: var(--sidebar-text);
+    cursor: pointer;
+    font-size: 1rem;
+    margin-left: 8px;
+    padding: 0;
+}
+
+.api-docs-btn {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--sidebar-text);
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.2s;
+}
+
+.api-docs-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* API Documentation Styles */
+.api-documentation {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+}
+
+.api-documentation h4 {
+    margin-bottom: 10px;
+    color: #bdc3c7;
+}
+
+.api-documentation h5 {
+    margin: 15px 0 8px 0;
+    color: #bdc3c7;
+}
+
+.api-documentation p {
+    margin-bottom: 8px;
+}
+
+.api-documentation code,
+.api-documentation pre {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    border-radius: 4px;
+    display: block;
+    overflow-x: auto;
+    font-family: monospace;
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+}
+
+.api-documentation pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+
+/* Update the api-key-value styles */
+.api-key-value {
+    display: flex;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    gap: 8px; /* Add gap between elements */
+}
+
+.api-key-value span {
+    flex-grow: 1;
+}
+
+/* Update the refresh button styles */
+.refresh-key-btn {
+    background: none;
+    border: none;
+    color: var(--sidebar-text);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.refresh-key-btn:hover {
+    transform: rotate(90deg);
+}
+
+.refresh-key-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Keep the rest of the styles the same */
+
+
+/* API Documentation Styles */
+.api-documentation {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+
+.api-documentation h4 {
+  margin-bottom: 15px;
+  color: #bdc3c7;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 8px;
+}
+
+.docs-section {
+  margin-bottom: 20px;
+}
+
+.docs-section h5 {
+  margin: 15px 0 8px 0;
+  color: #bdc3c7;
+  font-size: 0.9rem;
+}
+
+.docs-section h6 {
+  margin: 12px 0 6px 0;
+  color: #bdc3c7;
+  font-size: 0.85rem;
+}
+
+.description {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.api-documentation code,
+.api-documentation pre {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 4px;
+  display: block;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.api-documentation pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.params-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 0.8rem;
+}
+
+.params-table th,
+.params-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.params-table th {
+  background-color: rgba(0,0,0,0.3);
+  color: #bdc3c7;
+}
+
+.rate-limits {
+  padding-left: 20px;
+}
+
+.rate-limits li {
+  margin-bottom: 5px;
+}
+
+
+/* API Documentation in Main Content */
+.api-documentation-main {
+    background-color: var(--card-bg);
+    padding: 30px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.api-documentation-main h2 {
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.api-documentation-main h3 {
+    color: var(--text-dark);
+    margin: 25px 0 15px 0;
+    font-size: 1.2rem;
+}
+
+.api-documentation-main h4 {
+    color: var(--text-dark);
+    margin: 20px 0 12px 0;
+    font-size: 1.1rem;
+}
+
+.api-documentation-main .description {
+    color: var(--text-light);
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.api-documentation-main code,
+.api-documentation-main pre {
+    background-color: #f8f9fa;
+    border: 1px solid var(--border);
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    display: block;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.api-documentation-main pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.api-documentation-main .params-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 0.9rem;
+}
+
+.api-documentation-main .params-table th,
+.api-documentation-main .params-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.api-documentation-main .params-table th {
+    background-color: #f8f9fa;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.api-documentation-main .params-table tr:hover {
+    background-color: #f8f9fa;
 }
