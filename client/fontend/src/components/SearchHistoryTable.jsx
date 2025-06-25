@@ -8,7 +8,7 @@ const SearchHistoryTable = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await axios.get('http://13.232.220.117:8080/api/history');
+        const response = await axios.get('http://3.109.203.132:8080/api/history');
         setHistory(response.data);
         setLoading(false);
       } catch (error) {

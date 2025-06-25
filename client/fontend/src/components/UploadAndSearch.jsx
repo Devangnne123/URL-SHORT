@@ -164,7 +164,7 @@ const UploadAndSearch = () => {
 
       try {
         // Verify with backend
-        const response = await axios.post('http://13.232.220.117:8080/api/verify-auth', {
+        const response = await axios.post('http://3.109.203.132:8080/api/verify-auth', {
           key: authKey
         }, {
           headers: {
@@ -209,7 +209,7 @@ const UploadAndSearch = () => {
     formData.append('file', file);
 
     try {
-      const res = await axios.post('http://13.232.220.117:8080/api/excel/upload', formData, {
+      const res = await axios.post('http://3.109.203.132:8080/api/excel/upload', formData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
           'Content-Type': 'multipart/form-data'
@@ -232,7 +232,7 @@ const UploadAndSearch = () => {
 
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://13.232.220.117:8080/api/excel/search`, {
+      const res = await axios.get(`http://3.109.203.132:8080/api/excel/search`, {
         params: { linkedin_url: searchUrl },
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`

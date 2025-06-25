@@ -25,7 +25,7 @@ const Dashboard = () => {
             }
 
             const response = await axios.get(
-                'http://13.232.220.117:8080/api/user/history',
+                'http://3.109.203.132:8080/api/user/history',
                 {
                     params: {
                         userKey: userData.userKey
@@ -64,7 +64,7 @@ const Dashboard = () => {
             }
 
             const response = await axios.post(
-                'http://13.232.220.117:8080/api/user/refresh-key',
+                'http://3.109.203.132:8080/api/user/refresh-key',
                 {
                     email: userData.email,
                     currentKey: userData.userKey
@@ -105,7 +105,7 @@ const Dashboard = () => {
             }
 
             const response = await axios.post(
-                'http://13.232.220.117:8080/api/data/linkedin',
+                'http://3.109.203.132:8080/api/data/linkedin',
                 {
                     userKey: userData.userKey,
                     linkedinUrl: linkedinUrl
