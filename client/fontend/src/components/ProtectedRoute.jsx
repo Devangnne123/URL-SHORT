@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }) => {
       }
 
       try {
-        const response = await axios.get('http://3.109.203.132:8080/users');
+        const response = await axios.get('http://13.203.218.236:8080/users');
         const springUsers = response.data;
         const match = springUsers.some(user => user.name === storedKey);
         setIsAuthorized(match);

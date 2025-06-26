@@ -29,7 +29,7 @@ const Dashboard = () => {
             }
 
             const response = await axios.get(
-                'http://3.109.203.132:8080/api/user/history',
+                'http://13.203.218.236:8080/api/user/history',
                 {
                     params: {
                         userKey: userData.userKey
@@ -68,7 +68,7 @@ const Dashboard = () => {
             }
 
             const response = await axios.post(
-                'http://3.109.203.132:8080/api/user/refresh-key',
+                'http://13.203.218.236:8080/api/user/refresh-key',
                 {
                     email: userData.email,
                     currentKey: userData.userKey
@@ -109,7 +109,7 @@ const Dashboard = () => {
             }
 
             const response = await axios.post(
-                'http://3.109.203.132:8080/api/data/linkedin',
+                'http://13.203.218.236:8080/api/data/linkedin',
                 {
                     userKey: userData.userKey,
                     linkedinUrl: linkedinUrl
@@ -225,7 +225,7 @@ const Dashboard = () => {
                         
                         <div className="docs-section">
                             <h3>Endpoint</h3>
-                            <code>POST http://3.109.203.132:8080/api/data/linkedin</code>
+                            <code>POST http://13.203.218.236:8080/api/data/linkedin</code>
                             <p className="description">
                                 Retrieve LinkedIn profile data by providing a valid LinkedIn profile URL and your API key.
                             </p>
@@ -280,10 +280,10 @@ const Dashboard = () => {
     "userKey": "${userData?.userKey || 'your_api_key_here'}",
     "linkedinUrl": "https://www.linkedin.com/in/example"
   }' \\
-  http://3.109.203.132:8080/api/data/linkedin`}</pre>
+  http://13.203.218.236:8080/api/data/linkedin`}</pre>
 
                             <h4>JavaScript (fetch)</h4>
-                            <pre>{`fetch('http://3.109.203.132:8080/api/data/linkedin', {
+                            <pre>{`fetch('http://13.203.218.236:8080/api/data/linkedin', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -300,7 +300,7 @@ const Dashboard = () => {
                             <h4>Python (requests)</h4>
                             <pre>{`import requests
 
-url = "http://3.109.203.132:8080/api/data/linkedin"
+url = "http://13.203.218.236:8080/api/data/linkedin"
 payload = {
     "userKey": "${userData?.userKey || 'your_api_key_here'}",
     "linkedinUrl": "https://www.linkedin.com/in/example"
