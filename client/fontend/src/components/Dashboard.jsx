@@ -209,6 +209,14 @@ const Dashboard = () => {
                 <button onClick={handleLogout} className="logout-btn">
                     Logout
                 </button>
+                {userData?.key === 23 && (
+    <button 
+        onClick={() => navigate('/UserM')} 
+        className="admin-btn"
+    >
+        User Management
+    </button>
+)}
             </div>
             
             {/* Main Content */}
@@ -385,6 +393,7 @@ print(response.json())`}</pre>
                                     <p>No search history found</p>
                                 </div>
                             )}
+                            
                         </div>
                     </>
                 )}

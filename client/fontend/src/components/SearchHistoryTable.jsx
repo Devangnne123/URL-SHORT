@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import UserManagement from './UserManagement';
 
 const SearchHistoryTable = () => {
   const [history, setHistory] = useState([]);
@@ -27,6 +28,7 @@ const SearchHistoryTable = () => {
   return (
     <div className="container mt-4">
       <h2>Search History</h2>
+      <UserManagement />
       <div className="table-responsive">
         <table className="table table-striped table-hover">
           <thead className="thead-dark">
@@ -60,7 +62,9 @@ const SearchHistoryTable = () => {
             ))}
           </tbody>
         </table>
+        
       </div>
+      
     </div>
   );
 };

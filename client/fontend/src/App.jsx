@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 import Dashboard from './components/Dashboard';
+import UserManagement from './components/UserManagement';
 
 function App() {
     
@@ -12,6 +13,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Login />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                                        <Route path="/UserM" element={<UserManagement />} />
                 </Routes>
             </Router>
         </ErrorBoundary>
