@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { IoMdEye, IoMdEyeOff } from 'react-icons/io';
-import './UserM.css'; // Make sure to import your dashboard styles
+import './UserM.css';
 
 const UserManagement = () => {
-  // State management
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,9 +13,12 @@ const UserManagement = () => {
   // Editing state
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
-    credits: 0,
+    currentCredits: 0,
+    creditAddition: 0,
+    creditDeduction: 0,
     searchCount_Cost: 2,
     searchCount: 0,
+    searchLimit: 10,
     userKey: '',
     key: 1
   });
@@ -31,8 +32,15 @@ const UserManagement = () => {
     userKey: '',
     credits: 10,
     searchCount_Cost: 2,
+    searchLimit: 10,
     key: 1
   });
+  
+  // History state
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedUserForHistory, setSelectedUserForHistory] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -102,6 +110,25 @@ const UserManagement = () => {
     }
   };
 
+  // Fetch credit history for a user
+  const fetchCreditHistory = async (userId) => {
+    setHistoryLoading(true);
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      const response = await axios.get(`http://13.203.218.236:8080/api/credits/user/${userId}`, {
+        headers: {
+          'X-User-Email': userData.email,
+          'X-User-Key': userData.userKey
+        }
+      });
+      setHistory(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to fetch credit history');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, [pagination.page, pagination.size, isAdmin]);
@@ -110,9 +137,12 @@ const UserManagement = () => {
   const handleEdit = (user) => {
     setEditingId(user.id);
     setEditForm({
-      credits: user.credits,
+      currentCredits: user.credits,
+      creditAddition: 0,
+      creditDeduction: 0,
       searchCount_Cost: user.searchCount_Cost,
       searchCount: user.searchCount,
+      searchLimit: user.searchLimit,
       userKey: user.userKey,
       key: user.key
     });
@@ -120,10 +150,18 @@ const UserManagement = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let newValue = Math.max(0, parseInt(value) || 0);
+    
+    // Prevent deducting more than current credits
+    if (name === 'creditDeduction' && newValue > editForm.currentCredits) {
+      newValue = editForm.currentCredits;
+    }
+
     setEditForm(prev => ({
       ...prev,
-      [name]: name === 'credits' || name === 'searchCount_Cost' || name === 'searchCount' || name === 'key'
-        ? parseInt(value) || 0 
+      [name]: ['creditAddition', 'creditDeduction', 'searchCount_Cost', 
+              'searchCount', 'key', 'searchLimit'].includes(name)
+        ? newValue
         : value
     }));
   };
@@ -132,8 +170,9 @@ const UserManagement = () => {
     const { name, value } = e.target;
     setNewUser(prev => ({
       ...prev,
-      [name]: name === 'credits' || name === 'searchCount_Cost' || name === 'key'
-        ? parseInt(value) || 0 
+      [name]: name === 'credits' || name === 'searchCount_Cost' || 
+              name === 'key' || name === 'searchLimit'
+        ? Math.max(0, parseInt(value) || 0)
         : value
     }));
   };
@@ -142,16 +181,42 @@ const UserManagement = () => {
   const handleSave = async (userId) => {
     try {
       const userData = JSON.parse(localStorage.getItem('userData'));
-      await axios.put(`http://13.203.218.236:8080/api/users/${userId}`, editForm, {
+      const creditDelta = editForm.creditAddition - editForm.creditDeduction;
+      const finalDelta = Math.max(creditDelta, -editForm.currentCredits);
+      
+      const updateData = {
+        credits: finalDelta,
+        searchCount_Cost: editForm.searchCount_Cost,
+        searchCount: editForm.searchCount,
+        searchLimit: editForm.searchLimit,
+        userKey: editForm.userKey,
+        key: editForm.key,
+        adminEmail: userData.email
+      };
+
+      await axios.put(`http://13.203.218.236:8080/api/users/${userId}`, updateData, {
         headers: {
           'X-User-Email': userData.email,
           'X-User-Key': userData.key
         }
       });
       
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, ...editForm } : user
-      ));
+      // Update local state
+      setUsers(users.map(user => {
+        if (user.id === userId) {
+          return {
+            ...user,
+            credits: user.credits + creditDelta,
+            searchCount_Cost: updateData.searchCount_Cost,
+            searchCount: updateData.searchCount,
+            searchLimit: updateData.searchLimit,
+            userKey: updateData.userKey,
+            key: updateData.key
+          };
+        }
+        return user;
+      }));
+      
       setEditingId(null);
       setError(null);
     } catch (error) {
@@ -179,6 +244,7 @@ const UserManagement = () => {
         userKey: '',
         credits: 10,
         searchCount_Cost: 2,
+        searchLimit: 10,
         key: 1
       });
       setError(null);
@@ -208,7 +274,12 @@ const UserManagement = () => {
     }
   };
 
-  // UI helper functions
+  const viewHistory = async (userId) => {
+    setSelectedUserForHistory(userId);
+    await fetchCreditHistory(userId);
+    setShowHistory(true);
+  };
+
   const handleCancel = () => setEditingId(null);
 
   const handleCancelAdd = () => {
@@ -220,6 +291,7 @@ const UserManagement = () => {
       userKey: '',
       credits: 10,
       searchCount_Cost: 2,
+      searchLimit: 10,
       key: 1
     });
   };
@@ -228,7 +300,6 @@ const UserManagement = () => {
     setPagination(prev => ({ ...prev, page: newPage }));
   };
 
-  // Render states
   if (!isAdmin) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -247,7 +318,7 @@ const UserManagement = () => {
     );
   }
 
-   return (
+  return (
     <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       {/* Sidebar */}
       <div className="dashboard-sidebar">
@@ -301,8 +372,9 @@ const UserManagement = () => {
                 { label: 'Email', name: 'email', type: 'email', required: true },
                 { label: 'Password', name: 'password', type: 'password', required: true },
                 { label: 'User Key', name: 'userKey', type: 'text' },
-                { label: 'Credits', name: 'credits', type: 'number' },
+                { label: 'Initial Credits', name: 'credits', type: 'number' },
                 { label: 'Search Cost', name: 'searchCount_Cost', type: 'number' },
+                { label: 'Search Limit', name: 'searchLimit', type: 'number' },
                 { label: 'Admin Key (23 for admin)', name: 'key', type: 'number' }
               ].map((field) => (
                 <div key={field.name} className="form-group">
@@ -316,6 +388,7 @@ const UserManagement = () => {
                     value={newUser[field.name]}
                     onChange={handleNewUserChange}
                     required={field.required}
+                    min={field.type === 'number' ? '0' : undefined}
                   />
                 </div>
               ))}
@@ -343,7 +416,7 @@ const UserManagement = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  {['Name', 'Email', 'User Key', 'Admin Key', 'Credits', 'Search Cost', 'Search Count', 'Actions'].map((header) => (
+                  {['Name', 'Email', 'User Key', 'Admin Key', 'Credits', 'Search Cost', 'Search Count', 'Search Limit', 'Actions'].map((header) => (
                     <th key={header}>{header}</th>
                   ))}
                 </tr>
@@ -360,12 +433,45 @@ const UserManagement = () => {
                       {editingId === user.id ? (
                         <>
                           <td>
-                            <input
-                              type="number"
-                              name="credits"
-                              value={editForm.credits}
-                              onChange={handleInputChange}
-                            />
+                            <div className="credit-management">
+                              <div className="current-credits">
+                                <span>Current:</span>
+                                <strong>{editForm.currentCredits}</strong>
+                              </div>
+                              <div className="credit-adjustment">
+                                <div className="adjustment-group">
+                                  <label>Add:</label>
+                                  <input
+                                    type="number"
+                                    name="creditAddition"
+                                    value={editForm.creditAddition}
+                                    onChange={handleInputChange}
+                                    min="0"
+                                  />
+                                </div>
+                                <div className="adjustment-group">
+                                  <label>Deduct:</label>
+                                  <input
+                                    type="number"
+                                    name="creditDeduction"
+                                    value={editForm.creditDeduction}
+                                    onChange={handleInputChange}
+                                    min="0"
+                                    max={editForm.currentCredits}
+                                    disabled={editForm.currentCredits === 0}
+                                  />
+                                  {editForm.currentCredits === 0 && (
+                                    <div className="error-message">Cannot deduct - no credits available</div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="credit-preview">
+                                <span>New Total:</span>
+                                <strong>
+                                  {editForm.currentCredits + editForm.creditAddition - editForm.creditDeduction}
+                                </strong>
+                              </div>
+                            </div>
                           </td>
                           <td>
                             <input
@@ -373,6 +479,7 @@ const UserManagement = () => {
                               name="searchCount_Cost"
                               value={editForm.searchCount_Cost}
                               onChange={handleInputChange}
+                              min="1"
                             />
                           </td>
                           <td>
@@ -381,6 +488,16 @@ const UserManagement = () => {
                               name="searchCount"
                               value={editForm.searchCount}
                               onChange={handleInputChange}
+                              min="0"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              name="searchLimit"
+                              value={editForm.searchLimit}
+                              onChange={handleInputChange}
+                              min="0"
                             />
                           </td>
                           <td className="actions">
@@ -403,12 +520,19 @@ const UserManagement = () => {
                           <td>{user.credits}</td>
                           <td>{user.searchCount_Cost}</td>
                           <td>{user.searchCount}</td>
+                          <td>{user.searchLimit}</td>
                           <td className="actions">
                             <button
                               onClick={() => handleEdit(user)}
                               className="btn-primary"
                             >
                               Edit
+                            </button>
+                            <button
+                              onClick={() => viewHistory(user.id)}
+                              className="btn-info"
+                            >
+                              History
                             </button>
                             <button
                               onClick={() => handleDelete(user.id)}
@@ -423,7 +547,7 @@ const UserManagement = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" className="no-data">
+                    <td colSpan="9" className="no-data">
                       No users found
                     </td>
                   </tr>
@@ -456,6 +580,48 @@ const UserManagement = () => {
           )}
         </div>
       </div>
+
+      {/* Credit History Modal */}
+      {showHistory && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Credit History</h3>
+              <button onClick={() => setShowHistory(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              {historyLoading ? (
+                <div>Loading history...</div>
+              ) : (
+                <table className="history-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Action</th>
+                      <th>Amount</th>
+                      <th>Description</th>
+                      <th>Admin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.map((record) => (
+                      <tr key={record.id}>
+                        <td>{new Date(record.timestamp).toLocaleString()}</td>
+                        <td className={record.actionType.toLowerCase()}>
+                          {record.actionType}
+                        </td>
+                        <td>{record.amount}</td>
+                        <td>{record.description}</td>
+                        <td>{record.adminEmail}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
