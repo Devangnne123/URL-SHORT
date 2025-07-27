@@ -164,7 +164,7 @@ const UploadAndSearch = () => {
 
       try {
         // Verify with backend
-        const response = await axios.post('http://13.203.218.236:8080/api/verify-auth', {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/verify-auth`, {
           key: authKey
         }, {
           headers: {
@@ -209,7 +209,7 @@ const UploadAndSearch = () => {
     formData.append('file', file);
 
     try {
-      const res = await axios.post('http://13.203.218.236:8080/api/excel/upload', formData, {
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/excel/upload`, formData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
           'Content-Type': 'multipart/form-data'
@@ -232,7 +232,7 @@ const UploadAndSearch = () => {
 
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://13.203.218.236:8080/api/excel/search`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/excel/search`, {
         params: { linkedin_url: searchUrl },
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`

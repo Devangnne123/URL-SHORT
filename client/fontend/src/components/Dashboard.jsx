@@ -37,7 +37,7 @@ const Dashboard = () => {
       }
 
       const response = await axios.get(
-        "http://13.203.218.236:8080/api/user/history",
+        `${import.meta.env.VITE_API_BASE_URL}/api/user/history`,
         {
           params: {
             userKey: userData.userKey,
@@ -63,7 +63,7 @@ const Dashboard = () => {
       if (userData?.key === 23) {
         // Admin view - fetch all credit history
         const response = await axios.get(
-          "http://13.203.218.236:8080/api/credits/admin",
+          `${import.meta.env.VITE_API_BASE_URL}/api/credits/admin`,
           {
             headers: {
               "X-User-Email": userData.email,
@@ -75,7 +75,7 @@ const Dashboard = () => {
       } else {
         // Regular user view - fetch only their history
         const response = await axios.get(
-          `http://13.203.218.236:8080/api/credits/user/${userData.id}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/credits/user/${userData.id}`,
           {
             headers: {
               "X-User-Email": userData.email,
@@ -149,7 +149,7 @@ const Dashboard = () => {
 
     try {
       const response = await axios.post(
-        "http://13.203.218.236:8080/api/user/refresh-key",
+        `${import.meta.env.VITE_API_BASE_URL}/api/user/refresh-key`,
         {
           email: userData.email,
           currentKey: userData.userKey,
@@ -303,7 +303,7 @@ const Dashboard = () => {
             <h2>API Documentation</h2>
             <div className="docs-section">
               <h3>Endpoint</h3>
-              <code>POST http://13.203.218.236:8080/api/data/linkedin</code>
+              <code>POST {process.env.REACT_APP_API_BASE_URL}/api/data/linkedin</code>
               <p className="description">
                 Retrieve LinkedIn profile data by providing a valid LinkedIn
                 profile URL and your API key.
@@ -359,11 +359,11 @@ const Dashboard = () => {
   -d '{
     "userKey": "${userData?.userKey || "your_api_key_here"}",
     "linkedinUrl": "https://www.linkedin.com/in/example"
-  }' \\
-  http://13.203.218.236:8080/api/data/linkedin`}</pre>
+  }'\\
+  ${import.meta.env.VITE_API_BASE_URL}/api/data/linkedin`}</pre>
 
                 <h4>JavaScript (fetch)</h4>
-                <pre>{`fetch('http://13.203.218.236:8080/api/data/linkedin', {
+                <pre>{`fetch('${import.meta.env.VITE_API_BASE_URL}/api/data/linkedin', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -380,7 +380,7 @@ const Dashboard = () => {
                 <h4>Python (requests)</h4>
                 <pre>{`import requests
 
-url = "http://13.203.218.236:8080/api/data/linkedin"
+url = "${import.meta.env.VITE_API_BASE_URL}/api/data/linkedin"
 payload = {
     "userKey": "${userData?.userKey || "your_api_key_here"}",
     "linkedinUrl": "https://www.linkedin.com/in/example"

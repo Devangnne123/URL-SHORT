@@ -21,7 +21,7 @@ const UserCreditHistory = () => {
             if (userData?.key === 23) {
                 // Admin view - fetch all credit history
                 const response = await axios.get(
-                    'http://13.203.218.236:8080/api/credits/admin',
+                    `${import.meta.env.VITE_API_BASE_URL}/api/credits/admin`,
                     {
                         headers: {
                             'X-User-Email': userData.email,
@@ -33,7 +33,7 @@ const UserCreditHistory = () => {
             } else {
                 // Regular user view - fetch only their history
                 const response = await axios.get(
-                    `http://13.203.218.236:8080/api/credits/user/${userData.id}`, // Use user's ID
+                    `${import.meta.env.VITE_API_BASE_URL}/api/credits/user/${userData.id}`, // Use user's ID
                     {
                         headers: {
                             'X-User-Email': userData.email,

@@ -21,7 +21,7 @@ const Login = () => {
         setError('');
         
         try {
-            const response = await axios.post('http://13.203.218.236:8080/api/auth/login', {
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
                 email,
                 password
             });
@@ -50,7 +50,7 @@ const Login = () => {
         setError('');
         
         try {
-            const response = await axios.post('http://13.203.218.236:8080/api/auth/forgot-password', {
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/forgot-password`, {
                 email
             });
             
@@ -77,7 +77,7 @@ const Login = () => {
         setError('');
         
         try {
-            const response = await axios.post('http://13.203.218.236:8080/api/auth/reset-password', {
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/reset-password`, {
                 email,
                 otp,
                 newPassword

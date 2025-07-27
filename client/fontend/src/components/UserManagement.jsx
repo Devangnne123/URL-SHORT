@@ -87,7 +87,7 @@ const UserManagement = () => {
         throw new Error('User not authenticated');
       }
 
-      const response = await axios.get(`http://13.203.218.236:8080/api/users`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
         params: {
           page: pagination.page,
           size: pagination.size
@@ -115,7 +115,7 @@ const UserManagement = () => {
     setHistoryLoading(true);
     try {
       const userData = JSON.parse(localStorage.getItem('userData'));
-      const response = await axios.get(`http://13.203.218.236:8080/api/credits/user/${userId}`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/credits/user/${userId}`, {
         headers: {
           'X-User-Email': userData.email,
           'X-User-Key': userData.userKey
@@ -194,7 +194,7 @@ const UserManagement = () => {
         adminEmail: userData.email
       };
 
-      await axios.put(`http://13.203.218.236:8080/api/users/${userId}`, updateData, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/users/${userId}`, updateData, {
         headers: {
           'X-User-Email': userData.email,
           'X-User-Key': userData.key
@@ -228,7 +228,7 @@ const UserManagement = () => {
   const handleAddUser = async () => {
     try {
       const userData = JSON.parse(localStorage.getItem('userData'));
-      const response = await axios.post('http://13.203.218.236:8080/api/users', newUser, {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/users`, newUser, {
         headers: {
           'X-User-Email': userData.email,
           'X-User-Key': userData.key
@@ -259,7 +259,7 @@ const UserManagement = () => {
     
     try {
       const userData = JSON.parse(localStorage.getItem('userData'));
-      await axios.delete(`http://13.203.218.236:8080/api/users/${userId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/users/${userId}`, {
         headers: {
           'X-User-Email': userData.email,
           'X-User-Key': userData.key
