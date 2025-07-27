@@ -739,54 +739,41 @@ tr:hover {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   margin-left: 80px;
-  /* Width and scrolling properties */
-  width: 100%; /* Default to full width */
-  max-width: 1200px; /* Maximum width before scrolling */
-  min-width: 300px; /* Minimum width before scrolling */
-  overflow-x: auto;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
+  /* Remove overflow and scroll properties */
+  width: auto; /* Let the container expand naturally */
+  min-width: 300px; /* Minimum width */
+  max-width: none; /* Remove maximum width constraint */
+  overflow-x: visible; /* Ensure content is never clipped */
 }
 
-/* For containers that need specific widths */
+/* Remove fixed-width class if it forces scrolling */
 .filter-controls.fixed-width {
-  width: 1005px; /* Your requested specific width */
-  max-width: 1005px;
-  min-width: 1005px;
+  width: auto; /* Let it expand to content */
+  min-width: auto;
+  max-width: none;
 }
 
-/* Scrollbar styling (keep your existing styles) */
-.filter-controls::-webkit-scrollbar {
-  height: 6px;
-}
-
-.filter-controls::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 3px;
-}
-
-/* Filter group adjustments for width control */
+/* Remove scrollbar styling since we won't need it */
 .filter-group {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-shrink: 0;
-  min-width: fit-content; /* Ensure content doesn't collapse */
+  /* Remove flex-shrink to prevent shrinking */
+  flex-shrink: 1; /* Allow some shrinking if needed */
 }
 
 .filter-group select,
 .filter-group input[type="date"] {
-  width: auto; /* Let the browser determine width */
-  min-width: 120px; /* Minimum reasonable width */
-  max-width: 200px; /* Maximum width before truncation */
+  width: auto;
+  min-width: 120px;
+  max-width: 200px;
 }
 
-/* Responsive adjustments with width consideration */
+/* Responsive adjustments */
 @media (max-width: 1005px) {
-  .filter-controls.fixed-width {
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
+  .filter-controls {
+    margin-left: 0; /* Remove left margin on smaller screens */
+    width: 100%; /* Take full available width */
   }
   
   .filter-group select,
@@ -796,10 +783,6 @@ tr:hover {
 }
 
 @media (max-width: 768px) {
-  .filter-group {
-    flex: 0 0 auto; /* Reset flex for small screens */
-  }
-  
   .filter-group label {
     display: none;
   }
@@ -807,6 +790,5 @@ tr:hover {
   .filter-group select,
   .filter-group input[type="date"] {
     min-width: 80px;
-    max-width: 150px;
   }
 }

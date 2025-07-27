@@ -58,17 +58,18 @@
 
 button {
     
-    padding: 12px;
+    padding: 5px;
     background: linear-gradient(to right, #667eea, #764ba2);
     color: #fff;
     border: none;
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 10px;
     font-weight: 500;
     cursor: pointer;
     transition: opacity 0.3s;
     display: flex;
     align-items: center;
+    
     justify-content: center;
 }
 
