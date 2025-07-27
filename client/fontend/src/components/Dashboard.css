@@ -272,7 +272,7 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
 }
 
 th, td {
@@ -305,6 +305,9 @@ tr:hover {
     padding: 30px;
     color: var(--text-light);
 }
+
+
+
 
 /* Responsive Styles */
 @media (max-width: 992px) {
@@ -726,4 +729,84 @@ tr:hover {
 
 .admin-btn:active {
     background-color: #1a202c;
+}
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-left: 80px;
+  /* Width and scrolling properties */
+  width: 100%; /* Default to full width */
+  max-width: 1200px; /* Maximum width before scrolling */
+  min-width: 300px; /* Minimum width before scrolling */
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* For containers that need specific widths */
+.filter-controls.fixed-width {
+  width: 1005px; /* Your requested specific width */
+  max-width: 1005px;
+  min-width: 1005px;
+}
+
+/* Scrollbar styling (keep your existing styles) */
+.filter-controls::-webkit-scrollbar {
+  height: 6px;
+}
+
+.filter-controls::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 3px;
+}
+
+/* Filter group adjustments for width control */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  min-width: fit-content; /* Ensure content doesn't collapse */
+}
+
+.filter-group select,
+.filter-group input[type="date"] {
+  width: auto; /* Let the browser determine width */
+  min-width: 120px; /* Minimum reasonable width */
+  max-width: 200px; /* Maximum width before truncation */
+}
+
+/* Responsive adjustments with width consideration */
+@media (max-width: 1005px) {
+  .filter-controls.fixed-width {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  .filter-group select,
+  .filter-group input[type="date"] {
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-group {
+    flex: 0 0 auto; /* Reset flex for small screens */
+  }
+  
+  .filter-group label {
+    display: none;
+  }
+  
+  .filter-group select,
+  .filter-group input[type="date"] {
+    min-width: 80px;
+    max-width: 150px;
+  }
 }

@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { IoMdEye } from "react-icons/io";
 import { IoMdEyeOff } from "react-icons/io";
+import * as XLSX from "xlsx";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -12,12 +13,16 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshingKey, setIsRefreshingKey] = useState(false);
   const [searchHistory, setSearchHistory] = useState([]);
+  const [filteredHistory, setFilteredHistory] = useState([]);
   const [creditHistory, setCreditHistory] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showApiDocs, setShowApiDocs] = useState(false);
   const [showCreditHistory, setShowCreditHistory] = useState(false);
-  const [userCreditHistory, setUserCreditHistory] = useState([]); // Add this line
+  const [userCreditHistory, setUserCreditHistory] = useState([]);
+  const [successFilter, setSuccessFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const [userData, setUserData] = useState(() => {
     const storedData = localStorage.getItem("userData");
@@ -45,6 +50,7 @@ const Dashboard = () => {
       }
 
       setSearchHistory(response.data.history);
+      setFilteredHistory(response.data.history);
     } catch (err) {
       setError(
         err.response?.data?.message || err.message || "Failed to fetch history"
@@ -69,7 +75,7 @@ const Dashboard = () => {
       } else {
         // Regular user view - fetch only their history
         const response = await axios.get(
-          `http://13.203.218.236:8080/api/credits/user/${userData.id}`, // Use user's ID
+          `http://13.203.218.236:8080/api/credits/user/${userData.id}`,
           {
             headers: {
               "X-User-Email": userData.email,
@@ -96,6 +102,41 @@ const Dashboard = () => {
       }
     }
   }, [userData?.userKey, showCreditHistory]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [searchHistory, successFilter, startDate, endDate]);
+
+  const applyFilters = () => {
+    let filtered = [...searchHistory];
+
+    // Apply success/failure filter
+    if (successFilter !== "all") {
+      filtered = filtered.filter(
+        (item) => item.wasSuccessful === (successFilter === "true")
+      );
+    }
+
+    // Apply date range filter
+    if (startDate) {
+      const start = new Date(startDate);
+      filtered = filtered.filter((item) => {
+        const itemDate = new Date(item.searchDate);
+        return itemDate >= start;
+      });
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // Include entire end day
+      filtered = filtered.filter((item) => {
+        const itemDate = new Date(item.searchDate);
+        return itemDate <= end;
+      });
+    }
+
+    setFilteredHistory(filtered);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("userData");
@@ -131,51 +172,30 @@ const Dashboard = () => {
     }
   };
 
-  const fetchData = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredHistory.map((item) => ({
+        Date: item.searchDate ? new Date(item.searchDate).toLocaleString() : "N/A",
+        "Original URL": item.originalUrl || "N/A",
+        "LinkedIn URL": item.linkedinUrl || "N/A",
+        Successful: item.wasSuccessful !== undefined ? item.wasSuccessful.toString() : "N/A",
+        "IP Address": item.clientIp || "N/A",
+        "Credits Used": item.creditsDeducted || "0",
+        "Remaining Credits": item.remainingCredits || "0",
+        Searches: `${item.searchCount || 0}/${item.searchLimit || 0}`,
+      }))
+    );
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Search History");
+    XLSX.writeFile(workbook, `LinkedIn_Search_History_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
-    try {
-      const response = await axios.post(
-        "http://13.203.218.236:8080/api/data/linkedin",
-        {
-          userKey: userData.userKey,
-          linkedinUrl: linkedinUrl,
-        }
-      );
-
-      if (
-        response.data.success === false &&
-        response.data.message === "Search limit reached"
-      ) {
-        setError(
-          `You've reached your search limit of ${response.data.searchLimit}`
-        );
-        setData(null);
-        return;
-      }
-
-      setData(response.data.data);
-
-      const updatedUserData = {
-        ...userData,
-        searchCount: response.data.searchCount,
-        searchLimit: response.data.searchLimit,
-        credits: response.data.credits,
-      };
-      setUserData(updatedUserData);
-      localStorage.setItem("userData", JSON.stringify(updatedUserData));
-
-      await fetchSearchHistory();
-    } catch (err) {
-      setError(
-        err.response?.data?.message || err.message || "Failed to fetch data"
-      );
-      setData(null);
-    } finally {
-      setIsLoading(false);
-    }
+  const resetFilters = () => {
+    setSuccessFilter("all");
+    setStartDate("");
+    setEndDate("");
+    setFilteredHistory(searchHistory);
   };
 
   return (
@@ -235,7 +255,7 @@ const Dashboard = () => {
                 onClick={() => {
                   setShowApiDocs(false);
                   setShowCreditHistory(false);
-                  fetchSearchHistory(); // Refresh data when opening
+                  fetchSearchHistory();
                 }}
                 className="api-docs-btn"
               >
@@ -257,13 +277,6 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-
-          {/* <div className="info-group">
-                        <label>Searches</label>
-                        <div className="info-value">
-                            {userData?.searchCount || 0} / {userData?.searchLimit || 0}
-                        </div>
-                    </div> */}
         </div>
 
         <button onClick={handleLogout} className="logout-btn">
@@ -441,47 +454,112 @@ print(response.json())`}</pre>
         ) : (
           <div className="history-section">
             <div className="section-header">
-              <h3>Search History</h3>
-              <button
-                onClick={fetchSearchHistory}
-                className="refresh-btn"
-                title="Refresh History"
-              >
-                🔄
-              </button>
+              <h3>Search History </h3>
+              
+              
+              <div className="filter-controls">
+                <div className="filter-group">
+                  <label>Status:</label>
+                  <select
+                    value={successFilter}
+                    onChange={(e) => setSuccessFilter(e.target.value)}
+                  >
+                    <option value="all">All</option>
+                    <option value="true">Successful</option>
+                    <option value="false">Failed</option>
+                  </select>
+                </div>
+                
+                <div className="filter-group">
+                  <label>From:</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+                
+                <div className="filter-group">
+                  <label>To:</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    min={startDate}
+                  />
+                </div>
+                
+                <button onClick={resetFilters} className="reset-filters-btn">
+                  Reset Filters
+                </button>
+                
+                <button onClick={downloadExcel} className="download-btn">
+                  Download Excel
+                </button>
+                
+                <button
+                  onClick={fetchSearchHistory}
+                  className="refresh-btn"
+                  title="Refresh History"
+                >
+                  🔄
+                </button>
+              </div>
             </div>
 
-            {searchHistory.length > 0 ? (
+            {filteredHistory.length > 0 ? (
               <div className="table-container">
                 <table>
                   <thead>
                     <tr>
                       <th>Date</th>
+                      <th>Original URL</th>
                       <th>LinkedIn URL</th>
+                      <th>Successful</th>
+                      <th>IP Address</th>
                       <th>Credits Used</th>
                       <th>Remaining Credits</th>
                       <th>Searches</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {searchHistory.map((item, index) => (
+                    {filteredHistory.map((item, index) => (
                       <tr key={index}>
-                        <td>{new Date(item.searchDate).toLocaleString()}</td>
+                        <td>{item.searchDate ? new Date(item.searchDate).toLocaleString() : 'N/A'}</td>
                         <td className="url-cell">
-                          <a
-                            href={item.linkedinUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {item.linkedinUrl.length > 30
-                              ? `${item.linkedinUrl.substring(0, 30)}...`
-                              : item.linkedinUrl}
-                          </a>
+                          {item.originalUrl ? (
+                            <a
+                              href={item.originalUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {item.originalUrl.length > 30
+                                ? `${item.originalUrl.substring(0, 30)}...`
+                                : item.originalUrl}
+                            </a>
+                          ) : 'N/A'}
                         </td>
-                        <td>{item.creditsDeducted}</td>
-                        <td>{item.remainingCredits}</td>
+                        <td className="url-cell">
+                          {item.linkedinUrl ? (
+                            <a
+                              href={item.linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {item.linkedinUrl.length > 30
+                                ? `${item.linkedinUrl.substring(0, 30)}...`
+                                : item.linkedinUrl}
+                            </a>
+                          ) : 'N/A'}
+                        </td>
+                        <td className={item.wasSuccessful ? "success" : "fail"}>
+                          {item.wasSuccessful !== undefined ? item.wasSuccessful.toString() : 'N/A'}
+                        </td>
+                        <td>{item.clientIp || 'N/A'}</td>
+                        <td>{item.creditsDeducted || '0'}</td>
+                        <td>{item.remainingCredits || '0'}</td>
                         <td>
-                          {item.searchCount}/{item.searchLimit}
+                          {(item.searchCount || 0)}/{(item.searchLimit || 0)}
                         </td>
                       </tr>
                     ))}
@@ -490,7 +568,7 @@ print(response.json())`}</pre>
               </div>
             ) : (
               <div className="no-history">
-                <p>No search history found</p>
+                <p>No search history found matching your filters</p>
               </div>
             )}
           </div>
