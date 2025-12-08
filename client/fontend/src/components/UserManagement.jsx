@@ -20,7 +20,9 @@ const UserManagement = () => {
     searchCount: 0,
     searchLimit: 10,
     userKey: '',
-    key: 1
+    key: 1,
+    rateLimit: 10,           // Add rate limit field
+    rateLimitWindowMinutes: 1 // Add rate limit window field
   });
   
   // New user state
@@ -33,7 +35,9 @@ const UserManagement = () => {
     credits: 10,
     searchCount_Cost: 2,
     searchLimit: 10,
-    key: 1
+    key: 1,
+    rateLimit: 10,           // Add rate limit field
+    rateLimitWindowMinutes: 1 // Add rate limit window field
   });
   
   // History state
@@ -144,36 +148,54 @@ const UserManagement = () => {
       searchCount: user.searchCount,
       searchLimit: user.searchLimit,
       userKey: user.userKey,
-      key: user.key
+      key: user.key,
+      rateLimit: user.rateLimit || 10,                    // Add rate limit
+      rateLimitWindowMinutes: user.rateLimitWindowMinutes || 1 // Add rate limit window
     });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    let newValue = Math.max(0, parseInt(value) || 0);
+    let newValue;
     
-    // Prevent deducting more than current credits
-    if (name === 'creditDeduction' && newValue > editForm.currentCredits) {
-      newValue = editForm.currentCredits;
+    // Handle different input types
+    if (name === 'creditDeduction') {
+      // Prevent deducting more than current credits
+      newValue = Math.min(Math.max(0, parseInt(value) || 0), editForm.currentCredits);
+    } else if (name === 'rateLimitWindowMinutes') {
+      // Rate limit window must be at least 1 minute
+      newValue = Math.max(1, parseInt(value) || 1);
+    } else if (['creditAddition', 'searchCount_Cost', 'searchCount', 
+                'key', 'searchLimit', 'rateLimit'].includes(name)) {
+      // Other numeric fields - minimum 0 or 1
+      const minValue = name === 'searchCount_Cost' || name === 'rateLimit' ? 1 : 0;
+      newValue = Math.max(minValue, parseInt(value) || minValue);
+    } else {
+      newValue = value;
     }
 
     setEditForm(prev => ({
       ...prev,
-      [name]: ['creditAddition', 'creditDeduction', 'searchCount_Cost', 
-              'searchCount', 'key', 'searchLimit'].includes(name)
-        ? newValue
-        : value
+      [name]: newValue
     }));
   };
 
   const handleNewUserChange = (e) => {
     const { name, value } = e.target;
+    let newValue;
+    
+    if (name === 'rateLimitWindowMinutes') {
+      newValue = Math.max(1, parseInt(value) || 1);
+    } else if (['credits', 'searchCount_Cost', 'key', 'searchLimit', 'rateLimit'].includes(name)) {
+      const minValue = name === 'searchCount_Cost' || name === 'rateLimit' ? 1 : 0;
+      newValue = Math.max(minValue, parseInt(value) || minValue);
+    } else {
+      newValue = value;
+    }
+    
     setNewUser(prev => ({
       ...prev,
-      [name]: name === 'credits' || name === 'searchCount_Cost' || 
-              name === 'key' || name === 'searchLimit'
-        ? Math.max(0, parseInt(value) || 0)
-        : value
+      [name]: newValue
     }));
   };
 
@@ -191,6 +213,8 @@ const UserManagement = () => {
         searchLimit: editForm.searchLimit,
         userKey: editForm.userKey,
         key: editForm.key,
+        rateLimit: editForm.rateLimit,                    // Add rate limit
+        rateLimitWindowMinutes: editForm.rateLimitWindowMinutes, // Add rate limit window
         adminEmail: userData.email
       };
 
@@ -211,7 +235,9 @@ const UserManagement = () => {
             searchCount: updateData.searchCount,
             searchLimit: updateData.searchLimit,
             userKey: updateData.userKey,
-            key: updateData.key
+            key: updateData.key,
+            rateLimit: updateData.rateLimit,              // Add rate limit
+            rateLimitWindowMinutes: updateData.rateLimitWindowMinutes // Add rate limit window
           };
         }
         return user;
@@ -245,7 +271,9 @@ const UserManagement = () => {
         credits: 10,
         searchCount_Cost: 2,
         searchLimit: 10,
-        key: 1
+        key: 1,
+        rateLimit: 10,           // Reset to default
+        rateLimitWindowMinutes: 1 // Reset to default
       });
       setError(null);
     } catch (error) {
@@ -292,7 +320,9 @@ const UserManagement = () => {
       credits: 10,
       searchCount_Cost: 2,
       searchLimit: 10,
-      key: 1
+      key: 1,
+      rateLimit: 10,
+      rateLimitWindowMinutes: 1
     });
   };
 
@@ -372,10 +402,12 @@ const UserManagement = () => {
                 { label: 'Email', name: 'email', type: 'email', required: true },
                 { label: 'Password', name: 'password', type: 'password', required: true },
                 { label: 'User Key', name: 'userKey', type: 'text' },
-                { label: 'Initial Credits', name: 'credits', type: 'number' },
-                { label: 'Search Cost', name: 'searchCount_Cost', type: 'number' },
-                { label: 'Search Limit', name: 'searchLimit', type: 'number' },
-                { label: 'Admin Key (23 for admin)', name: 'key', type: 'number' }
+                { label: 'Initial Credits', name: 'credits', type: 'number', min: 0 },
+                { label: 'Search Cost', name: 'searchCount_Cost', type: 'number', min: 1 },
+                { label: 'Search Limit', name: 'searchLimit', type: 'number', min: 0 },
+                { label: 'Rate Limit (requests)', name: 'rateLimit', type: 'number', min: 1 },
+                { label: 'Rate Limit Window (minutes)', name: 'rateLimitWindowMinutes', type: 'number', min: 1 },
+                { label: 'Admin Key (23 for admin)', name: 'key', type: 'number', min: 0 }
               ].map((field) => (
                 <div key={field.name} className="form-group">
                   <label>
@@ -388,7 +420,8 @@ const UserManagement = () => {
                     value={newUser[field.name]}
                     onChange={handleNewUserChange}
                     required={field.required}
-                    min={field.type === 'number' ? '0' : undefined}
+                    min={field.min}
+                    placeholder={field.label}
                   />
                 </div>
               ))}
@@ -416,7 +449,7 @@ const UserManagement = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  {['Name', 'Email', 'User Key', 'Admin Key', 'Credits', 'Search Cost', 'Search Count', 'Search Limit', 'Actions'].map((header) => (
+                  {['Name', 'Email', 'User Key', 'Admin Key', 'Credits', 'Search Cost', 'Search Count', 'Search Limit', 'Rate Limit', 'Rate Window', 'Actions'].map((header) => (
                     <th key={header}>{header}</th>
                   ))}
                 </tr>
@@ -447,6 +480,7 @@ const UserManagement = () => {
                                     value={editForm.creditAddition}
                                     onChange={handleInputChange}
                                     min="0"
+                                    className="small-input"
                                   />
                                 </div>
                                 <div className="adjustment-group">
@@ -459,6 +493,7 @@ const UserManagement = () => {
                                     min="0"
                                     max={editForm.currentCredits}
                                     disabled={editForm.currentCredits === 0}
+                                    className="small-input"
                                   />
                                   {editForm.currentCredits === 0 && (
                                     <div className="error-message">Cannot deduct - no credits available</div>
@@ -480,6 +515,7 @@ const UserManagement = () => {
                               value={editForm.searchCount_Cost}
                               onChange={handleInputChange}
                               min="1"
+                              className="small-input"
                             />
                           </td>
                           <td>
@@ -489,6 +525,7 @@ const UserManagement = () => {
                               value={editForm.searchCount}
                               onChange={handleInputChange}
                               min="0"
+                              className="small-input"
                             />
                           </td>
                           <td>
@@ -498,6 +535,29 @@ const UserManagement = () => {
                               value={editForm.searchLimit}
                               onChange={handleInputChange}
                               min="0"
+                              className="small-input"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              name="rateLimit"
+                              value={editForm.rateLimit}
+                              onChange={handleInputChange}
+                              min="1"
+                              className="small-input"
+                              title="Maximum requests allowed"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              name="rateLimitWindowMinutes"
+                              value={editForm.rateLimitWindowMinutes}
+                              onChange={handleInputChange}
+                              min="1"
+                              className="small-input"
+                              title="Time window in minutes"
                             />
                           </td>
                           <td className="actions">
@@ -521,6 +581,18 @@ const UserManagement = () => {
                           <td>{user.searchCount_Cost}</td>
                           <td>{user.searchCount}</td>
                           <td>{user.searchLimit}</td>
+                          <td>
+                            <div className="rate-limit-info">
+                              <span className="rate-limit-value">{user.rateLimit || 10}</span>
+                              <span className="rate-limit-label">requests</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="rate-window-info">
+                              <span className="rate-window-value">{user.rateLimitWindowMinutes || 1}</span>
+                              <span className="rate-window-label">minute(s)</span>
+                            </div>
+                          </td>
                           <td className="actions">
                             <button
                               onClick={() => handleEdit(user)}
@@ -547,7 +619,7 @@ const UserManagement = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="9" className="no-data">
+                    <td colSpan="11" className="no-data">
                       No users found
                     </td>
                   </tr>
